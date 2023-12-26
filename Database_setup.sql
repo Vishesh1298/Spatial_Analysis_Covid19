@@ -196,11 +196,6 @@ ALTER TABLE covid_data
 ADD COLUMN location geometry (Point ,4326) ;
 
 UPDATE covid_data
-SET location = st_setSRID(st_makePoint(latitude,longitude), 4326);
-
--- Dropping country_code column
-ALTER Table covid_data
-Drop column country_codede;
-
+SET location = ST_SetSRID(ST_MakePoint(longitude, latitude), 4326);
 
 
