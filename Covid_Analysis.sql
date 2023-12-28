@@ -16,7 +16,8 @@ UPDATE covid_data
 SET mortality = (deaths / confirmed) * 100;
 
 
--- STEP 3: Creating a view with Confirmed Cases and of top 5 countries
+-- STEP 3: Creating a view with Confirmed Cases 
+-- and of top 5 countries
 
 DROP VIEW IF EXISTS Confirmed_Cases_view;
 
@@ -45,9 +46,9 @@ FROM (
 ) ranked_data
 WHERE row_num <= 5;
 
--- STEP 4: Creating a view with Mortality and of top 5 countries
+-- STEP 4: Creating a view with Mortality 
+-- and of top 5 countries
 
-DROP VIEW IF EXISTS AllDeaths_view;
 
 CREATE VIEW Deaths_view AS
 SELECT
@@ -72,3 +73,35 @@ FROM (
         covid_data
 ) ranked_data
 WHERE row_num <= 5;
+
+
+-- STEP 5: Spatial Join to identify the country closest 
+-- to each one, considering the one with the highest confirmed cases.
+
+SELECT
+    a.country AS base_country,
+    closest_pair.country2 AS closest_country,
+    closest_pair.distance_between,
+    closest_pair.highest_confirmed
+FROM
+    covid_data a
+JOIN LATERAL (
+    SELECT
+        b.country AS country2,
+        ST_Distance(a.location, b.location) AS distance_between,
+        b.confirmed AS highest_confirmed
+    FROM
+        covid_data b
+    WHERE
+        a.country != b.country
+    ORDER BY
+        ST_Distance(a.location, b.location),
+        b.confirmed DESC
+    LIMIT 1
+) AS closest_pair ON true;
+
+
+
+
+	
+	
